@@ -1,24 +1,71 @@
-const mysql = require("mysql2");
-const { CustomError } = require("../../errorHandler");
+const { Sequelize, DataTypes, Op } = require("sequelize");
 
-const mysql_config = {
-    host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT,
-    database: process.env.MYSQL_DB,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASS,
-};
+const sequelize = new Sequelize(
+    process.env.MYSQL_DB,
+    process.env.MYSQL_USER,
+    process.env.MYSQL_PASS,
+    {
+        host: process.env.MYSQL_HOST,
+        port: process.env.MYSQL_PORT,
+        dialect: "mysql",
+        logging: false,
+    }
+);
 
-const pool = mysql.createPool(mysql_config);
-const promisePool = pool.promise();
+const User = sequelize.define(
+    "User",
+    {
+        id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            primaryKey: true,
+        },
+        name: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        surname: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        email: {
+            type: DataTypes.STRING(100),
+            allowNull: false,
+            unique: true,
+        },
+        phone: {
+            type: DataTypes.DECIMAL(15, 0),
+            allowNull: false,
+            unique: true,
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        tokenHash: {
+            type: DataTypes.STRING,
+        },
+    },
+    {
+        tableName: "users",
+        createdAt: false,
+        updatedAt: false,
+    }
+);
+
+User.sync({ alter: true, force: false });
 
 class UserRepository {
     async findUserByEmail(userEmail) {
-        const query =
-            "SELECT id, name, surname, email, phone, password, tokenHash FROM users WHERE email=?";
-        const [rows] = await promisePool.query(query, userEmail);
-
-        const userDB = rows[0];
+        const data = await User.findOne({
+            where: {
+                email: {
+                    [Op.eq]: userEmail,
+                },
+            },
+        });
+        //console.log(data);
+        const userDB = data.dataValues;
 
         if (!userDB) {
             throw new CustomError("EMAIL_IS_INCORRECT");
@@ -28,11 +75,14 @@ class UserRepository {
     }
 
     async findUserByPhone(userPhone) {
-        const query =
-            "SELECT id, name, surname, email, phone, password, tokenHash FROM users WHERE phone=?";
-        const [rows] = await promisePool.query(query, userPhone);
-
-        const userDB = rows[0];
+        const data = await User.findAll({
+            where: {
+                phone: {
+                    [Op.eq]: userPhone,
+                },
+            },
+        });
+        const userDB = data[0].dataValues;
 
         if (!userDB) {
             throw new CustomError("EMAIL_IS_INCORRECT");
@@ -42,10 +92,14 @@ class UserRepository {
     }
 
     async getUserById(userId) {
-        const query =
-            "SELECT id, name, surname, email, phone, password, tokenHash FROM users WHERE id=?";
-        const [rows] = await promisePool.query(query, userId);
-        const userDB = rows[0];
+        const data = await User.findAll({
+            where: {
+                id: {
+                    [Op.eq]: userId,
+                },
+            },
+        });
+        const userDB = data[0].dataValues;
 
         if (!userDB) {
             throw new CustomError("CANT_FIND_USER_BY_ID");
@@ -55,47 +109,62 @@ class UserRepository {
     }
 
     async findMaxUserId() {
-        const query = "SELECT MAX(id) AS MAX_ID FROM users";
-        const [rows] = await promisePool.query(query);
-        const maxId = rows[0].MAX_ID;
+        const maxId = await User.max("id");
 
-        return maxId;
+        return Number(maxId);
     }
 
     async saveNewUser(newUser) {
-        const query = "INSERT INTO users SET ?";
-        await promisePool.query(query, newUser);
+        await User.create(newUser);
     }
 
     async updateTokenHashById(userId, newTokenHash) {
-        const query = "UPDATE users SET tokenHash=? WHERE id=?";
-        const [rows] = await promisePool.query(query, [newTokenHash, userId]);
+        const result = await User.update(
+            { tokenHash: newTokenHash },
+            {
+                where: {
+                    id: {
+                        [Op.eq]: userId,
+                    },
+                },
+            }
+        );
 
-        if (!rows.affectedRows) {
+        if (!result) {
             throw new CustomError("CANT_FIND_USER_BY_ID");
         }
     }
 
     async updateTokenHashByEmail(userEmail, newTokenHash) {
-        const query = "UPDATE users SET tokenHash=? WHERE email=?";
-        const [rows] = await promisePool.query(query, [
-            newTokenHash,
-            userEmail,
-        ]);
+        const result = await User.update(
+            { tokenHash: newTokenHash },
+            {
+                where: {
+                    email: {
+                        [Op.eq]: userEmail,
+                    },
+                },
+            }
+        );
 
-        if (!rows.affectedRows) {
+        if (!result) {
             throw new CustomError("CANT_FIND_USER_BY_ID");
         }
     }
 
     async updateTokenHashByPhone(userPhone, newTokenHash) {
-        const query = "UPDATE users SET tokenHash=? WHERE phone=?";
-        const [rows] = await promisePool.query(query, [
-            newTokenHash,
-            userPhone,
-        ]);
+        const result = await User.update(
+            { tokenHash: newTokenHash },
+            {
+                where: {
+                    phone: {
+                        [Op.eq]: userPhone,
+                    },
+                },
+            }
+        );
 
-        if (!rows.affectedRows) {
+        if (!result) {
             throw new CustomError("CANT_FIND_USER_BY_ID");
         }
     }
