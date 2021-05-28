@@ -128,7 +128,7 @@ class FileDBRepository {
         return filePathAndName;
     }
 
-    async deleteFileFromDB(fileId) {
+    async deleteFileParams(fileId) {
         const result = await File.destroy({
             where: {
                 id: {

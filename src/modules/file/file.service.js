@@ -26,7 +26,7 @@ class FileService {
         const filePath = `${fileDestFolder}/${filePathAndName.fileName}`;
 
         await fileSystemRepository.deleteFileFromFS(filePath);
-        await fileDBRepository.deleteFileFromDB(fileId);
+        await fileDBRepository.deleteFileParams(fileId);
     }
 
     async getOneFileInfo(fileId) {
@@ -35,7 +35,7 @@ class FileService {
         return fileInfo;
     }
 
-    async downloadFile(fileId) {
+    async getFilePathAndName(fileId) {
         const filePathAndName = await fileDBRepository.getFilePathAndName(
             fileId
         );
@@ -51,7 +51,7 @@ class FileService {
         );
         const fileOldPath = `${fileDestFolder}/${filePathAndName.fileName}`;
 
-        await fileDBRepository.deleteFIleFromFS(fileOldPath);
+        await fileSystemRepository.deleteFileFromFS(fileOldPath);
         await fileDBRepository.updateFileParams(fileId, fileParams);
     }
 }

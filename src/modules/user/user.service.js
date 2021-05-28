@@ -6,6 +6,8 @@ const { saltRounds } = require("../../constants");
 
 class UserService {
     async userSignIn(idEmailOrPhone, password) {
+        //since the id parameter (idEmailOrPhone in the userSignIn method) can contain an email or a phone number,
+        //added additional checks and additional methods in userRepository for each of the possible data
         const validEmailRegExp =
             /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
         let userDB;

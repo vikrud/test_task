@@ -108,7 +108,9 @@ router.get(
         try {
             const id = req.params.id;
 
-            const [filePath, fileName] = await fileService.downloadFile(id);
+            const [filePath, fileName] = await fileService.getFilePathAndName(
+                id
+            );
 
             res.download(filePath, fileName);
         } catch (err) {
