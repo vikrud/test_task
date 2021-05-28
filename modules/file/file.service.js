@@ -8,6 +8,8 @@ class FileService {
         Object.assign(fileParamsWIthId, fileParams, { id: newFileId });
 
         await fileRepository.uploadFileParams(fileParamsWIthId);
+
+        return newFileId;
     }
 
     async getFileList(listSize, page) {

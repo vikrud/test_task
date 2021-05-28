@@ -35,10 +35,12 @@ router.post(
         try {
             const fileParamsToDB = await getFileParamsFromReq(req.file);
 
-            await fileService.uploadFileParams(fileParamsToDB);
+            const newFileId = await fileService.uploadFileParams(
+                fileParamsToDB
+            );
 
             const responseData = await insertDataIntoResponseObj(
-                new MessageToUser("FILE_UPLOADED_MESSAGE")
+                new MessageToUser("FILE_UPLOADED_MESSAGE", newFileId)
             );
 
             res.status(201).send(responseData);
