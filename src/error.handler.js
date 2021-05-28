@@ -1,4 +1,4 @@
-const { HttpCodes } = require("./messages/httpCodes");
+const { HttpCodes } = require("./messages/http.codes");
 const { customErrors } = require("./messages/errors");
 
 class CustomError {

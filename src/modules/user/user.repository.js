@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes, Op } = require("sequelize");
-const { CustomError } = require("../../errorHandler");
+const { CustomError } = require("../../error.handler");
 
 const sequelize = new Sequelize(
     process.env.MYSQL_DB,

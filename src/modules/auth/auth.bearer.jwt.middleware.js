@@ -1,21 +1,25 @@
 const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
-const { CustomError } = require("../../errorHandler");
-const { refreshJwtValidTime } = require("../../constants");
+const { CustomError } = require("../../error.handler");
+const { bearerJwtValidTime } = require("../../constants");
+const { userService } = require("../user/user.service");
 
-const refreshJwtStrategy = new JwtStrategy(
+const bearerJwtStrategy = new JwtStrategy(
     {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: process.env.JWT_PRIVATE_KEY,
     },
-    function (payload, done) {
+    async function (payload, done) {
         const tokenAge = Math.floor(Date.now() / 1000) - payload.iat;
+        const userDB = await userService.getUserById(payload.id);
+        const tokenHashDB = userDB.tokenHash;
 
         if (
             payload.id &&
-            payload.sub === "refresh" &&
-            tokenAge < refreshJwtValidTime
+            payload.sub === "access" &&
+            tokenAge < bearerJwtValidTime &&
+            tokenHashDB === payload.tokenHash
         ) {
             return done(null, payload);
         } else {
@@ -24,10 +28,10 @@ const refreshJwtStrategy = new JwtStrategy(
     }
 );
 
-function authenticateRefreshJWT() {
+function authenticateBearerJWT() {
     return function (req, res, next) {
         passport.authenticate(
-            refreshJwtStrategy,
+            bearerJwtStrategy,
             { session: false },
             (error, user, info) => {
                 if (error) {
@@ -44,4 +48,4 @@ function authenticateRefreshJWT() {
     };
 }
 
-module.exports = { authenticateRefreshJWT };
+module.exports = { authenticateBearerJWT };

@@ -1,4 +1,4 @@
-const { MessageToUser } = require("./userMessage");
+const { MessageToUser } = require("./message.to.user");
 
 function isEmpty(obj) {
     for (let key in obj) {

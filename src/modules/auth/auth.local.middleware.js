@@ -2,7 +2,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const { isEmpty } = require("../../utils.js");
 const { userService } = require("../user/user.service");
-const { CustomError } = require("../../errorHandler");
+const { CustomError } = require("../../error.handler");
 
 const localStrategy = new LocalStrategy(
     {

@@ -1,5 +1,5 @@
 /node_modules
 .env
 /.vscode
-fileStorage/*
-!fileStorage/.gitkeep
+file-storage/*
+!file-storage/.gitkeep

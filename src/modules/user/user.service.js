@@ -1,6 +1,6 @@
 const { userRepository } = require("./user.repository");
 const { encodeAccessJWT, encodeRefreshJWT } = require("../auth/jwt.config");
-const { CustomError } = require("../../errorHandler");
+const { CustomError } = require("../../error.handler");
 const bcrypt = require("bcrypt");
 const { saltRounds } = require("../../constants");
 
@@ -15,7 +15,9 @@ class UserService {
             saltRounds
         );
 
-        if (validEmailRegExp.test(idEmailOrPhone)) {
+        const isIdEmail = validEmailRegExp.test(idEmailOrPhone);
+
+        if (isIdEmail) {
             await userRepository.updateTokenHashByEmail(
                 idEmailOrPhone,
                 newTokenHash
@@ -41,9 +43,7 @@ class UserService {
         return { bearerToken: accessToken, refreshToken: refreshToken };
     }
 
-    async userSignInNewToken(userId) {
-        await this.userLogout(userId);
-
+    async getNewBearerToken(userId) {
         const userDB = await userRepository.getUserById(userId);
 
         const accessToken = await encodeAccessJWT(userDB);
@@ -71,9 +71,14 @@ class UserService {
         });
 
         await userRepository.saveNewUser(newUserComplete);
+
+        const accessToken = await encodeAccessJWT(newUserComplete);
+        const refreshToken = await encodeRefreshJWT(newUserComplete);
+
+        return { bearerToken: accessToken, refreshToken: refreshToken };
     }
 
-    async userLogout(userId) {
+    async updateUserTokenHash(userId) {
         const newTokenHash = await bcrypt.hash(
             `${userId}_${Date.now() / 1000}`,
             saltRounds

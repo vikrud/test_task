@@ -1,7 +1,5 @@
 const { Sequelize, DataTypes, Op } = require("sequelize");
-const { CustomError } = require("../../errorHandler");
-
-const fsPromises = require("fs").promises;
+const { CustomError } = require("../../error.handler");
 
 const sequelize = new Sequelize(
     process.env.MYSQL_DB,
@@ -57,7 +55,7 @@ const File = sequelize.define(
 
 File.sync({ alter: true, force: false });
 
-class FileRepository {
+class FileDBRepository {
     async findMaxFileId() {
         const maxId = (await File.max("id")) || 0;
 
@@ -130,11 +128,7 @@ class FileRepository {
         return filePathAndName;
     }
 
-    async deleteFIleFromFS(filePath) {
-        await fsPromises.unlink(filePath);
-    }
-
-    async deleteFIleFromDB(fileId) {
+    async deleteFileFromDB(fileId) {
         const result = await File.destroy({
             where: {
                 id: {
@@ -148,8 +142,6 @@ class FileRepository {
             throw new CustomError("CANT_FIND_FILE_BY_ID");
         }
     }
-
-    async downloadFile(fileId) {}
 
     async updateFileParams(fileId, fileParams) {
         const result = await File.update(fileParams, {
@@ -167,4 +159,4 @@ class FileRepository {
     }
 }
 
-module.exports = { fileRepository: new FileRepository() };
+module.exports = { fileDBRepository: new FileDBRepository() };

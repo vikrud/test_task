@@ -1,15 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const { userService } = require("./user.service");
-const { isEmpty } = require("../../utils.js");
-const { errorHandler, CustomError } = require("../../errorHandler");
-const { MessageToUser } = require("../../userMessage");
+const { isEmpty, insertDataIntoResponseObj } = require("../../utils.js");
+const { errorHandler, CustomError } = require("../../error.handler");
+const { MessageToUser } = require("../../message.to.user");
 const { authenticateLogin } = require("../auth/auth.local.middleware");
 const { authenticateBearerJWT } = require("../auth/auth.bearer.jwt.middleware");
 const {
     authenticateRefreshJWT,
 } = require("../auth/auth.refresh.jwt.middleware");
-const { insertDataIntoResponseObj } = require("../../utils");
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
@@ -34,9 +33,9 @@ async function extractUserDataFromRequest(request) {
 
 router.post("/signin", authenticateLogin(), async function (req, res, next) {
     try {
-        const userJWT = req.token;
+        const userTokens = req.token;
 
-        const responseData = await insertDataIntoResponseObj(userJWT);
+        const responseData = await insertDataIntoResponseObj(userTokens);
 
         res.status(200).send(responseData);
     } catch (err) {
@@ -50,7 +49,7 @@ router.post(
     async function (req, res, next) {
         try {
             const userId = req.user.id;
-            const newBeaverToken = await userService.userSignInNewToken(userId);
+            const newBeaverToken = await userService.getNewBearerToken(userId);
 
             const responseData = await insertDataIntoResponseObj(
                 newBeaverToken
@@ -70,11 +69,9 @@ router.post("/signup", async function (req, res, next) {
         }
 
         const user = await extractUserDataFromRequest(req);
-        await userService.createUser(user);
+        const userTokens = await userService.createUser(user);
 
-        const responseData = await insertDataIntoResponseObj(
-            new MessageToUser("USER_CREATED_MESSAGE")
-        );
+        const responseData = await insertDataIntoResponseObj(userTokens);
 
         res.status(201).send(responseData);
     } catch (err) {
@@ -99,7 +96,7 @@ router.get("/logout", authenticateBearerJWT(), async function (req, res, next) {
     try {
         const userId = req.user.id;
 
-        await userService.userLogout(userId);
+        await userService.updateUserTokenHash(userId);
 
         const responseData = await insertDataIntoResponseObj(
             new MessageToUser("USER_LOGOUT_MESSAGE")

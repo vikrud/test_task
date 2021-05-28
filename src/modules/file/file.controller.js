@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateBearerJWT } = require("../auth/auth.bearer.jwt.middleware");
-const { MessageToUser } = require("../../userMessage");
-const { errorHandler } = require("../../errorHandler");
+const { MessageToUser } = require("../../message.to.user");
+const { errorHandler } = require("../../error.handler");
 const { fileService } = require("./file.service");
 const multer = require("multer");
 const { fileDestFolder } = require("../../constants");
