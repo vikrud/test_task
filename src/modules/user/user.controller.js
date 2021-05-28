@@ -108,6 +108,18 @@ router.get("/logout", authenticateBearerJWT(), async function (req, res, next) {
     }
 });
 
+router.get(
+    "/latency",
+    authenticateBearerJWT(),
+    async function (req, res, next) {
+        try {
+            res.status(200).send("OK");
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 router.use(async function (err, req, res, next) {
     const error = errorHandler(err);
     const responseData = await insertDataIntoResponseObj(error);
