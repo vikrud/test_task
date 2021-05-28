@@ -13,7 +13,7 @@ const bearerJwtStrategy = new JwtStrategy(
     async function (payload, done) {
         const tokenAge = Math.floor(Date.now() / 1000) - payload.iat;
         const userDB = await userService.getUserById(payload.id);
-        const tokenHashDB = userDB[0].tokenHash;
+        const tokenHashDB = userDB.tokenHash;
 
         if (
             payload.id &&

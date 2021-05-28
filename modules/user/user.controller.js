@@ -9,6 +9,7 @@ const { authenticateBearerJWT } = require("../auth/auth.bearer.jwt.middleware");
 const {
     authenticateRefreshJWT,
 } = require("../auth/auth.refresh.jwt.middleware");
+const { insertDataIntoResponseObj } = require("../../utils");
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
@@ -29,28 +30,6 @@ async function extractUserDataFromRequest(request) {
     }
 
     return user;
-}
-
-function insertDataIntoResponseObj(data) {
-    let responseObj = {
-        success: false,
-    };
-
-    if (data.type == "error") {
-        responseObj.success = false;
-        responseObj.error = data.message;
-    } else if (Array.isArray(data)) {
-        responseObj.success = true;
-        responseObj.data = data;
-    } else if (data instanceof MessageToUser) {
-        responseObj.success = true;
-        responseObj.message = data.message;
-    } else if (!isEmpty(data) && (data.bearerToken || data.refreshToken)) {
-        responseObj.success = true;
-        responseObj.data = [data];
-    }
-
-    return responseObj;
 }
 
 router.post("/signin", authenticateLogin(), async function (req, res, next) {
@@ -97,7 +76,7 @@ router.post("/signup", async function (req, res, next) {
             new MessageToUser("USER_CREATED_MESSAGE")
         );
 
-        res.status(200).send(responseData);
+        res.status(201).send(responseData);
     } catch (err) {
         next(err);
     }
@@ -108,7 +87,7 @@ router.get("/info", authenticateBearerJWT(), async function (req, res, next) {
         const userId = req.user.id;
         const user = await userService.getUserById(userId);
 
-        const responseData = await insertDataIntoResponseObj(user);
+        const responseData = await insertDataIntoResponseObj([user]);
 
         res.status(200).send(responseData);
     } catch (err) {

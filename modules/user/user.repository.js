@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes, Op } = require("sequelize");
+const { CustomError } = require("../../errorHandler");
 
 const sequelize = new Sequelize(
     process.env.MYSQL_DB,
@@ -57,55 +58,54 @@ User.sync({ alter: true, force: false });
 
 class UserRepository {
     async findUserByEmail(userEmail) {
-        const data = await User.findOne({
+        const userDB = await User.findOne({
             where: {
                 email: {
                     [Op.eq]: userEmail,
                 },
             },
+            raw: true,
         });
-        //console.log(data);
-        const userDB = data.dataValues;
 
         if (!userDB) {
-            throw new CustomError("EMAIL_IS_INCORRECT");
+            throw new CustomError("EMAIL_OR_PHONE_IS_INCORRECT");
         }
 
         return userDB;
     }
 
     async findUserByPhone(userPhone) {
-        const data = await User.findAll({
+        const userDB = await User.findOne({
             where: {
                 phone: {
                     [Op.eq]: userPhone,
                 },
             },
+            raw: true,
         });
-        const userDB = data[0].dataValues;
 
         if (!userDB) {
-            throw new CustomError("EMAIL_IS_INCORRECT");
+            throw new CustomError("EMAIL_OR_PHONE_IS_INCORRECT");
         }
 
         return userDB;
     }
 
     async getUserById(userId) {
-        const data = await User.findAll({
+        const userDB = await User.findOne({
             where: {
                 id: {
                     [Op.eq]: userId,
                 },
             },
+            raw: true,
         });
-        const userDB = data[0].dataValues;
 
         if (!userDB) {
             throw new CustomError("CANT_FIND_USER_BY_ID");
         }
 
-        return [userDB];
+        return userDB;
     }
 
     async findMaxUserId() {

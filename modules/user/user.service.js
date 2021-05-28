@@ -11,7 +11,7 @@ class UserService {
         let userDB;
 
         const newTokenHash = await bcrypt.hash(
-            `${idEmailOrPhone}_${Date.now() / 1000}`,
+            `${idEmailOrPhone}_${Date.now()}`,
             saltRounds
         );
 
@@ -52,24 +52,25 @@ class UserService {
     }
 
     async getUserById(userId) {
-        const result = await userRepository.getUserById(userId);
-        return result;
+        const userDB = await userRepository.getUserById(userId);
+        return userDB;
     }
 
     async createUser(newUser) {
-        const maxUsersId = await userRepository.findMaxUserId();
-        newUser.id = +maxUsersId + 1;
-
+        const newUserId = (await userRepository.findMaxUserId()) + 1;
         const passwordHash = await bcrypt.hash(newUser.password, saltRounds);
-        newUser.password = passwordHash;
-
         const newTokenHash = await bcrypt.hash(
-            `${newUser.id}_${Date.now() / 1000}`,
+            `${newUser.id}_${Date.now()}`,
             saltRounds
         );
-        newUser.tokenHash = newTokenHash;
+        const newUserComplete = {};
+        Object.assign(newUserComplete, newUser, {
+            id: newUserId,
+            password: passwordHash,
+            tokenHash: newTokenHash,
+        });
 
-        await userRepository.saveNewUser(newUser);
+        await userRepository.saveNewUser(newUserComplete);
     }
 
     async userLogout(userId) {

@@ -15,11 +15,14 @@ function errorHandler(err) {
         message: null,
         type: "error",
     };
-    console.log(err);
+
     if (err instanceof CustomError) {
         handledError.statusCode = err.statusCode;
         handledError.message = err.message;
-    } else if (err.code == "ER_DUP_ENTRY") {
+    } else if (
+        err.message === "Validation error" &&
+        err.errors[0].validatorKey === "not_unique"
+    ) {
         handledError.statusCode =
             customErrors.EMAIL_OR_PHONE_ALREADY_IN_USE.code;
         handledError.message =

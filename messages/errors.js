@@ -15,7 +15,7 @@ const customErrors = {
         code: 400,
         message: "The user's email or phone is already in use!",
     },
-    EMAIL_IS_INCORRECT: {
+    EMAIL_OR_PHONE_IS_INCORRECT: {
         code: 401,
         message: "The entered users id (email or phone) is incorrect",
     },
@@ -26,6 +26,10 @@ const customErrors = {
     UNAUTHORISED: {
         code: 401,
         message: "UNAUTHORISED!",
+    },
+    CANT_FIND_FILE_BY_ID: {
+        code: 404,
+        message: "Can't find file with such ID",
     },
 };
 
